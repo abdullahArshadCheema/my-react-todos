@@ -4,6 +4,7 @@ A simple, clean To-Do List built with React.
 
 [![CI](https://github.com/abdullahArshadCheema/my-react-todos/actions/workflows/ci.yml/badge.svg)](https://github.com/abdullahArshadCheema/my-react-todos/actions/workflows/ci.yml)
 [![Pages](https://github.com/abdullahArshadCheema/my-react-todos/actions/workflows/pages.yml/badge.svg)](https://github.com/abdullahArshadCheema/my-react-todos/actions/workflows/pages.yml)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/PLACEHOLDER-SITE-ID/deploy-status)](https://app.netlify.com/sites/PLACEHOLDER-NAME/deploys)
 
 ## Features
 
@@ -52,6 +53,11 @@ Open http://localhost:3000 in your browser.
 - GitHub Pages (auto): https://abdullahArshadCheema.github.io/my-react-todos
 	- Pushed via GitHub Actions on every commit to main/master.
 - Netlify: connect this repo and set build command `npm run build`, publish `build`.
+	- (Optional) Add environment vars in Netlify UI if needed later.
+	- To use the GitHub Action workflow, create a personal access token (classic) or Netlify auth token and set secrets:
+		- `NETLIFY_AUTH_TOKEN`
+		- `NETLIFY_SITE_ID`
+	- After first deploy, replace the badge URL `PLACEHOLDER-SITE-ID` and `PLACEHOLDER-NAME` with your actual site values.
 
 ## Tech & tests
 
