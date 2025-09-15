@@ -3,6 +3,7 @@
 A simple, clean To-Do List built with React.
 
 ## Features
+
 - Add tasks (Enter or Add)
 - Toggle complete (click the text)
 - Delete tasks
@@ -22,15 +23,18 @@ npm start
 Open http://localhost:3000 in your browser.
 
 ## File structure
+
 - `src/TodoList.js` — component logic
 - `src/TodoList.css` — component styles
 - `src/App.js` — renders the TodoList
 
 ## Deploy
+
 - Netlify or Vercel: push to GitHub, import repo, and deploy.
 - GitHub Pages: `npm run build` then publish `/build`.
 
 ## Next improvements
+
 - Clear completed
 - Drag to reorder
 - Tests with React Testing Library

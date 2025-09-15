@@ -7,5 +7,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .App { background: linear-gradient(180deg, #0b1220, #0f172a); }
+  .App {
+    background: linear-gradient(180deg, #0b1220, #0f172a);
+  }
 }

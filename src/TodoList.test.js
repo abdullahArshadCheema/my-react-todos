@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TodoList from './TodoList';
 
@@ -35,7 +35,7 @@ test('filters active and completed', async () => {
   await userEvent.type(input, 'A{enter}');
   await userEvent.type(input, 'B{enter}');
   // Complete task A specifically
-  const aRow = screen.getByText('A').closest('li');
+  const aRow = screen.getAllByRole('listitem').find((li) => within(li).queryByText('A'));
   const aCb = within(aRow).getByRole('checkbox');
   await userEvent.click(aCb);
 
@@ -43,7 +43,9 @@ test('filters active and completed', async () => {
   expect(screen.queryByText('A')).not.toBeInTheDocument();
   expect(screen.getByText('B')).toBeInTheDocument();
 
-  const completedFilter = screen.getAllByRole('button', { name: /completed/i }).find(b => b.className.includes('todo-filter'));
+  const completedFilter = screen
+    .getAllByRole('button', { name: /completed/i })
+    .find((b) => b.className.includes('todo-filter'));
   await userEvent.click(completedFilter);
   expect(screen.getByText('A')).toBeInTheDocument();
   expect(screen.queryByText('B')).not.toBeInTheDocument();
@@ -67,7 +69,7 @@ test('clear completed removes completed tasks', async () => {
   await userEvent.type(input, 'A{enter}');
   await userEvent.type(input, 'B{enter}');
   // Complete task A specifically
-  const aRow = screen.getByText('A').closest('li');
+  const aRow = screen.getAllByRole('listitem').find((li) => within(li).queryByText('A'));
   const aCb = within(aRow).getByRole('checkbox');
   await userEvent.click(aCb);
 

@@ -1,11 +1,11 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "run-jest-once",
-			"type": "shell",
-			"command": "npm test -- --watchAll=false",
-			"group": "test"
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run-jest-once",
+      "type": "shell",
+      "command": "npm test -- --watchAll=false",
+      "group": "test"
+    }
+  ]
 }

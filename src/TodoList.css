@@ -167,9 +167,18 @@
   background: #e5e7eb;
   color: #111827;
 }
-.pill-high { background: #fee2e2; color: #991b1b; }
-.pill-medium { background: #dbeafe; color: #1e3a8a; }
-.pill-low { background: #dcfce7; color: #065f46; }
+.pill-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.pill-medium {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+.pill-low {
+  background: #dcfce7;
+  color: #065f46;
+}
 
 /* Dark theme control surfaces */
 .todo-app.theme-dark .todo-input,
