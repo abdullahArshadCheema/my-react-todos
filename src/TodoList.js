@@ -66,11 +66,33 @@ function TodoList() {
       }
     } catch {}
 
-    // Load theme
+    // Load theme: prefer saved; otherwise use OS preference; fallback 'dark'
     try {
       const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        setTheme(savedTheme);
+      } else if (typeof window !== 'undefined' && window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        setTheme(prefersDark.matches ? 'dark' : 'light');
+      } else {
+        setTheme('dark');
+      }
     } catch {}
+  }, []);
+
+  // Optional: respond to OS theme changes until user explicitly toggles and saves
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') return; // user choice takes precedence
+    const onChange = (e) => setTheme(e.matches ? 'dark' : 'light');
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else if (mq.removeListener) mq.removeListener(onChange);
+    };
   }, []);
 
   // Save tasks to localStorage whenever they change
