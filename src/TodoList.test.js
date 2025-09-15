@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TodoList from './TodoList';
 
@@ -34,8 +34,10 @@ test('filters active and completed', async () => {
   const input = screen.getByPlaceholderText(/add a new task/i);
   await userEvent.type(input, 'A{enter}');
   await userEvent.type(input, 'B{enter}');
-  const [cb1] = screen.getAllByRole('checkbox');
-  await userEvent.click(cb1); // complete first
+  // Complete task A specifically
+  const aRow = screen.getByText('A').closest('li');
+  const aCb = within(aRow).getByRole('checkbox');
+  await userEvent.click(aCb);
 
   await userEvent.click(screen.getByRole('button', { name: /active/i }));
   expect(screen.queryByText('A')).not.toBeInTheDocument();
@@ -64,8 +66,10 @@ test('clear completed removes completed tasks', async () => {
   const input = screen.getByPlaceholderText(/add a new task/i);
   await userEvent.type(input, 'A{enter}');
   await userEvent.type(input, 'B{enter}');
-  const [cb1] = screen.getAllByRole('checkbox');
-  await userEvent.click(cb1);
+  // Complete task A specifically
+  const aRow = screen.getByText('A').closest('li');
+  const aCb = within(aRow).getByRole('checkbox');
+  await userEvent.click(aCb);
 
   const clearBtn = screen.getByRole('button', { name: /clear completed/i });
   await userEvent.click(clearBtn);

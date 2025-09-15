@@ -4,6 +4,9 @@ import './TodoList.css';
 function TodoList() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
+  const [priority, setPriority] = useState('medium'); // low | medium | high
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState('created-desc'); // created-desc|created-asc|alpha-asc|alpha-desc|priority|incomplete-first
   const [filter, setFilter] = useState('all'); // all | active | completed
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -20,12 +23,18 @@ function TodoList() {
       let initial = [];
       if (saved) {
         initial = JSON.parse(saved);
-        // Migration: ensure IDs exist
+        // Migration: ensure IDs, createdAt, and priority exist
         let nextId = 0;
         initial = initial.map((t, i) => {
           const id = typeof t.id === 'number' ? t.id : i;
           nextId = Math.max(nextId, id + 1);
-          return { id, text: t.text, completed: !!t.completed };
+          return {
+            id,
+            text: t.text,
+            completed: !!t.completed,
+            createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now() + i,
+            priority: t.priority === 'high' || t.priority === 'low' || t.priority === 'medium' ? t.priority : 'medium',
+          };
         });
         idRef.current = nextId;
       }
@@ -64,9 +73,10 @@ function TodoList() {
 
   const handleAddTask = () => {
     if (input.trim() === "") return;
-    const newTask = { id: idRef.current++, text: input.trim(), completed: false };
+    const newTask = { id: idRef.current++, text: input.trim(), completed: false, createdAt: Date.now(), priority };
     setTasks([...tasks, newTask]);
     setInput("");
+    setPriority('medium');
   };
 
   const handleInputChange = (e) => setInput(e.target.value);
@@ -91,10 +101,20 @@ function TodoList() {
     }
   };
 
-  // Filters
-  const filteredTasks = tasks.filter(t =>
-    filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed
-  );
+  // Search, Filter, Sort
+  const filteredTasks = tasks
+    .filter(t => (filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed))
+    .filter(t => t.text.toLowerCase().includes(search.toLowerCase()));
+
+  const sorters = {
+    'created-desc': (a, b) => b.createdAt - a.createdAt,
+    'created-asc': (a, b) => a.createdAt - b.createdAt,
+    'alpha-asc': (a, b) => a.text.localeCompare(b.text),
+    'alpha-desc': (a, b) => b.text.localeCompare(a.text),
+    'priority': (a, b) => ({ high: 0, medium: 1, low: 2 })[a.priority] - ({ high: 0, medium: 1, low: 2 })[b.priority],
+    'incomplete-first': (a, b) => Number(a.completed) - Number(b.completed),
+  };
+  const visibleTasks = [...filteredTasks].sort(sorters[sortBy] || sorters['created-desc']);
 
   const remaining = tasks.filter(t => !t.completed).length;
   const hasCompleted = tasks.some(t => t.completed);
@@ -165,6 +185,16 @@ function TodoList() {
             if (e.key === 'Enter') handleAddTask();
           }}
         />
+        <select
+          aria-label="Priority"
+          className="todo-select"
+          value={priority}
+          onChange={e => setPriority(e.target.value)}
+        >
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
         <button className="todo-add-btn" onClick={handleAddTask}>Add</button>
       </div>
       <div className="todo-toolbar">
@@ -194,11 +224,70 @@ function TodoList() {
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</button>
       </div>
+      <div className="todo-toolbar">
+        <input
+          className="todo-search"
+          placeholder="Search tasks..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <select
+          aria-label="Sort by"
+          className="todo-select"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+        >
+          <option value="created-desc">Newest first</option>
+          <option value="created-asc">Oldest first</option>
+          <option value="alpha-asc">A → Z</option>
+          <option value="alpha-desc">Z → A</option>
+          <option value="priority">Priority</option>
+          <option value="incomplete-first">Incomplete first</option>
+        </select>
+        <button className="todo-secondary-btn" onClick={() => {
+          const allCompleted = tasks.every(t => t.completed);
+          setTasks(tasks.map(t => ({ ...t, completed: !allCompleted })));
+        }}>Toggle All</button>
+        <button className="todo-secondary-btn" onClick={() => {
+          const data = JSON.stringify(tasks, null, 2);
+          const blob = new Blob([data], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'tasks.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        }}>Export</button>
+        <input id="todo-import" type="file" accept="application/json" style={{ display: 'none' }} onChange={async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            if (!Array.isArray(parsed)) return;
+            let nextId = idRef.current;
+            const cleaned = parsed.map((t, i) => {
+              const id = typeof t.id === 'number' ? t.id : nextId++;
+              return {
+                id,
+                text: String(t.text || '').slice(0, 500),
+                completed: !!t.completed,
+                createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now() + i,
+                priority: t.priority === 'high' || t.priority === 'low' || t.priority === 'medium' ? t.priority : 'medium',
+              };
+            });
+            idRef.current = nextId;
+            setTasks(cleaned);
+          } catch {}
+          e.target.value = '';
+        }} />
+        <button className="todo-secondary-btn" onClick={() => document.getElementById('todo-import')?.click()}>Import</button>
+      </div>
       <ul className="todo-list">
-        {filteredTasks.length === 0 ? (
+        {visibleTasks.length === 0 ? (
           <li className="todo-empty">No tasks yet.</li>
         ) : (
-          filteredTasks.map((task) => (
+          visibleTasks.map((task) => (
             <li
               key={task.id}
               className={`todo-item ${draggingId === task.id ? 'dragging' : ''}`}
@@ -214,6 +303,7 @@ function TodoList() {
                 onChange={() => handleToggleComplete(task.id)}
                 aria-label={`Mark ${task.text} as ${task.completed ? 'incomplete' : 'complete'}`}
               />
+              <span className={`todo-priority pill-${task.priority}`} title={`Priority: ${task.priority}`}>{task.priority}</span>
               {editingId === task.id ? (
                 <input
                   className="todo-input"

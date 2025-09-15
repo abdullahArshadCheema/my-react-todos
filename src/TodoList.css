@@ -132,6 +132,11 @@
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
+.todo-select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
 }
 .todo-clear-btn:disabled {
   opacity: 0.5;
@@ -139,6 +144,19 @@
 }
 
 .todo-theme-btn {
+.todo-search {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+.todo-secondary-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
   border: 1px solid #d1d5db;
   background: #fff;
   padding: 6px 10px;
@@ -147,9 +165,27 @@
 }
 
 .todo-undo {
+.theme-dark .todo-search,
+.theme-dark .todo-select,
+.theme-dark .todo-secondary-btn {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
   margin-top: 12px;
   background: #fef3c7;
   border: 1px solid #fde68a;
+.todo-priority {
+  text-transform: capitalize;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: #e5e7eb;
+  color: #111827;
+}
+.pill-high { background: #fee2e2; color: #991b1b; }
+.pill-medium { background: #dbeafe; color: #1e3a8a; }
+.pill-low { background: #dcfce7; color: #065f46; }
   color: #92400e;
   padding: 8px 12px;
   border-radius: 6px;
