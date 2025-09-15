@@ -91,3 +91,27 @@
   color: #fff;
   border-color: #2563eb;
 }
+
+.todo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.todo-count {
+  color: #6b7280;
+}
+
+.todo-clear-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.todo-clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
