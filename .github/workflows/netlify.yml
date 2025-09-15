@@ -4,10 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
 jobs:
-  deploy:
-    if: ${{ secrets.NETLIFY_AUTH_TOKEN && secrets.NETLIFY_SITE_ID }}
+  build:
+    name: Build (and preview on PR)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,12 +17,27 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm ci || npm install
-      - run: npm run build
-      - name: Deploy
+      - name: Install dependencies
+        run: npm ci || npm install
+      - name: Build
+        run: npm run build
+      # NOTE: Replace PLACEHOLDER_SECRET references with real GitHub Actions secrets, e.g.
+      # NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      # NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Deploy draft (PR)
+        if: github.event_name == 'pull_request'
         uses: netlify/actions/cli@master
         with:
-          args: deploy --dir=build --prod --message="GitHub Action deploy"
+          args: deploy --dir=build --message="Preview from PR"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Deploy production
+        if: github.event_name != 'pull_request'
+        uses: netlify/actions/cli@master
+        with:
+          args: deploy --dir=build --prod --message="Prod deploy"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+

@@ -14,7 +14,19 @@ function TodoList() {
   const undoTimerRef = useRef(null);
   const [lastDeleted, setLastDeleted] = useState(null); // { task, index }
   const [draggingId, setDraggingId] = useState(null);
-  const [theme, setTheme] = useState('light'); // light | dark
+  const [theme, setTheme] = useState('dark'); // light | dark
+  const inputRef = useRef(null);
+  // Toasts
+  const [toasts, setToasts] = useState([]); // { id, type: 'success'|'warning'|'info', message }
+  const toastIdRef = useRef(0);
+  const addToast = (message, type = 'success', timeout = 3000) => {
+    const id = toastIdRef.current++;
+    setToasts((prev) => [...prev, { id, type, message }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, timeout);
+  };
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -86,14 +98,20 @@ function TodoList() {
     setTasks([...tasks, newTask]);
     setInput('');
     setPriority('medium');
+    addToast(`Added "${newTask.text}"`, 'success');
   };
 
   const handleInputChange = (e) => setInput(e.target.value);
 
   const handleToggleComplete = (id) => {
+    const t = tasks.find((x) => x.id === id);
+    const willComplete = t ? !t.completed : false;
     setTasks(
       tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task))
     );
+    if (t) {
+      addToast(`Marked "${t.text}" as ${willComplete ? 'completed' : 'incomplete'}`, 'success');
+    }
   };
 
   const handleDeleteTask = (id) => {
@@ -108,6 +126,7 @@ function TodoList() {
       setEditingId(null);
       setEditingText('');
     }
+    addToast(`Deleted "${task.text}"`, 'warning');
   };
 
   // Search, Filter, Sort
@@ -159,6 +178,7 @@ function TodoList() {
     setTasks(arr);
     setLastDeleted(null);
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    addToast(`Restored "${task.text}"`, 'info');
   };
 
   // Drag & drop reorder (only in 'all' filter)
@@ -189,6 +209,7 @@ function TodoList() {
           type="text"
           placeholder="Add a new task..."
           className="todo-input"
+          ref={inputRef}
           value={input}
           onChange={handleInputChange}
           onKeyDown={(e) => {
@@ -201,11 +222,14 @@ function TodoList() {
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
         >
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="high">🔥 High</option>
+          <option value="medium">⚖️ Medium</option>
+          <option value="low">🧊 Low</option>
         </select>
-        <button className="todo-add-btn" onClick={handleAddTask}>
+        <button className="todo-add-btn" onClick={handleAddTask} aria-label="Add task">
+          <span className="emoji" aria-hidden="true">
+            ➕
+          </span>{' '}
           Add
         </button>
       </div>
@@ -215,21 +239,41 @@ function TodoList() {
             className={`todo-filter ${filter === 'all' ? 'active' : ''}`}
             onClick={() => setFilter('all')}
           >
+            <span className="emoji" aria-hidden="true">
+              ⭐
+            </span>{' '}
             All
           </button>
           <button
             className={`todo-filter ${filter === 'active' ? 'active' : ''}`}
             onClick={() => setFilter('active')}
           >
+            <span className="emoji" aria-hidden="true">
+              ⏳
+            </span>{' '}
             Active
           </button>
           <button
             className={`todo-filter ${filter === 'completed' ? 'active' : ''}`}
             onClick={() => setFilter('completed')}
           >
+            <span className="emoji" aria-hidden="true">
+              ✅
+            </span>{' '}
             Completed
           </button>
         </div>
+        {/* Mobile filter select (visible on small screens via CSS) */}
+        <select
+          className="todo-filter-select"
+          aria-label="Filter tasks"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
+        </select>
         <div className="todo-count" aria-live="polite">
           {remaining} item{remaining !== 1 ? 's' : ''} left
         </div>
@@ -238,6 +282,9 @@ function TodoList() {
           onClick={() => setTasks(tasks.filter((t) => !t.completed))}
           disabled={!hasCompleted}
         >
+          <span className="emoji" aria-hidden="true">
+            🧹
+          </span>{' '}
           Clear Completed
         </button>
         <button
@@ -245,7 +292,21 @@ function TodoList() {
           aria-pressed={theme === 'dark'}
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          {theme === 'dark' ? (
+            <>
+              <span className="emoji" aria-hidden="true">
+                ☀️
+              </span>{' '}
+              Light Mode
+            </>
+          ) : (
+            <>
+              <span className="emoji" aria-hidden="true">
+                🌙
+              </span>{' '}
+              Dark Mode
+            </>
+          )}
         </button>
       </div>
       <div className="todo-toolbar">
@@ -275,6 +336,9 @@ function TodoList() {
             setTasks(tasks.map((t) => ({ ...t, completed: !allCompleted })));
           }}
         >
+          <span className="emoji" aria-hidden="true">
+            🔁
+          </span>{' '}
           Toggle All
         </button>
         <button
@@ -290,6 +354,9 @@ function TodoList() {
             URL.revokeObjectURL(url);
           }}
         >
+          <span className="emoji" aria-hidden="true">
+            ⬇️
+          </span>{' '}
           Export
         </button>
         <input
@@ -328,6 +395,9 @@ function TodoList() {
           className="todo-secondary-btn"
           onClick={() => document.getElementById('todo-import')?.click()}
         >
+          <span className="emoji" aria-hidden="true">
+            ⬆️
+          </span>{' '}
           Import
         </button>
       </div>
@@ -338,7 +408,9 @@ function TodoList() {
           visibleTasks.map((task) => (
             <li
               key={task.id}
-              className={`todo-item ${draggingId === task.id ? 'dragging' : ''}`}
+              className={`todo-item ${draggingId === task.id ? 'dragging' : ''} ${
+                task.completed ? 'is-completed' : ''
+              }`}
               draggable={filter === 'all'}
               onDragStart={() => handleDragStart(task.id)}
               onDragOver={handleDragOver}
@@ -377,13 +449,74 @@ function TodoList() {
                   {task.text}
                 </span>
               )}
-              <button className="todo-delete-btn" onClick={() => handleDeleteTask(task.id)}>
+              <button
+                className="todo-delete-btn"
+                onClick={() => handleDeleteTask(task.id)}
+                aria-label={`Delete ${task.text}`}
+              >
+                <span className="emoji" aria-hidden="true">
+                  🗑️
+                </span>{' '}
                 Delete
               </button>
             </li>
           ))
         )}
       </ul>
+      {/* Mobile sticky action bar */}
+      <div className="mobile-sticky" aria-label="Quick actions">
+        <button
+          className="todo-secondary-btn"
+          onClick={() => {
+            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            inputRef.current?.focus();
+          }}
+          aria-label="New task"
+        >
+          <span className="emoji" aria-hidden="true">
+            ➕
+          </span>{' '}
+          New
+        </button>
+        <button
+          className="todo-secondary-btn"
+          onClick={() => {
+            const allCompleted = tasks.every((t) => t.completed);
+            setTasks(tasks.map((t) => ({ ...t, completed: !allCompleted })));
+          }}
+        >
+          <span className="emoji" aria-hidden="true">
+            🔁
+          </span>{' '}
+          Toggle
+        </button>
+        <button
+          className="todo-clear-btn"
+          onClick={() => setTasks(tasks.filter((t) => !t.completed))}
+          disabled={!hasCompleted}
+        >
+          <span className="emoji" aria-hidden="true">
+            🧹
+          </span>{' '}
+          Clear
+        </button>
+        <button
+          className="todo-theme-btn"
+          aria-pressed={theme === 'dark'}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <span className="emoji" aria-hidden="true">
+              ☀️
+            </span>
+          ) : (
+            <span className="emoji" aria-hidden="true">
+              🌙
+            </span>
+          )}
+        </button>
+      </div>
       {lastDeleted && (
         <div className="todo-undo" role="alert" aria-live="assertive">
           Task deleted.
@@ -392,6 +525,21 @@ function TodoList() {
           </button>
         </div>
       )}
+      {/* Toast notifications */}
+      <div className="toasts" aria-live="polite" aria-atomic="true">
+        {toasts.map((t) => (
+          <div key={t.id} className={`toast toast-${t.type}`} role="status">
+            <span className="toast-msg">{t.message}</span>
+            <button
+              className="toast-close"
+              aria-label="Dismiss notification"
+              onClick={() => removeToast(t.id)}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

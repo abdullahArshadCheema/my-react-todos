@@ -51,20 +51,29 @@ Open http://localhost:3000 in your browser.
 ## Deploy
 
 - GitHub Pages (auto): https://abdullahArshadCheema.github.io/my-react-todos
-	- Pushed via GitHub Actions on every commit to main/master.
-- Netlify: connect this repo and set build command `npm run build`, publish `build`.
-	- (Optional) Add environment vars in Netlify UI if needed later.
-	- To use the GitHub Action workflow, create a personal access token (classic) or Netlify auth token and set secrets:
+	- Auto-deploys on each push to main/master via `pages.yml` (build:pages script sets PUBLIC_URL).
+- Netlify: connect the repo OR rely on `netlify.yml`.
+	- Auto-deploys on push to main/master (production) and creates preview deploys for pull requests.
+	- Secrets required in repo settings → Actions secrets:
 		- `NETLIFY_AUTH_TOKEN`
 		- `NETLIFY_SITE_ID`
-	- After first deploy, replace the badge URL `PLACEHOLDER-SITE-ID` and `PLACEHOLDER-NAME` with your actual site values.
+	- Badge: replace `PLACEHOLDER-SITE-ID` & `PLACEHOLDER-NAME` after first deploy.
+	- PRs get a comment with preview URL when secrets are present.
 
 ### Dual deployment note
 
 This repo deploys to both GitHub Pages and Netlify:
 - Pages build uses `npm run build:pages` (injects PUBLIC_URL for subpath).
 - Netlify uses plain `npm run build` so assets resolve at site root.
-If you see broken asset paths on Netlify, ensure the `homepage` field is NOT present in `package.json` (removed) and you used the standard build script.
+If you see broken asset paths on Netlify, ensure the `homepage` field is NOT present in `package.json` and you used the standard build script.
+
+### CI/CD flow summary
+
+1. Push / PR triggers `ci.yml` (lint, unit tests, e2e matrix) and `pages.yml` (if push to main/master) and `netlify.yml` (push + PR).
+2. Pages deploy only happens after a successful build step producing the artifact.
+3. Netlify action deploys preview for PRs, production for main/master pushes.
+4. Optional manual run: both workflows still expose `workflow_dispatch`.
+5. Visual baseline updates (if enabled) would be a future enhancement (currently e2e runs only chromium in CI).
 
 ## Tech & tests
 
