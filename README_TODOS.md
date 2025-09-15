@@ -3,9 +3,11 @@
 A simple, clean To-Do List built with React.
 
 ## Features
-- Add tasks
-- Mark as complete (click the text)
+- Add tasks (Enter or Add)
+- Toggle complete (click the text)
 - Delete tasks
+- Edit task (double-click, Enter to save, Esc to cancel)
+- Filters: All / Active / Completed
 - Persists to localStorage
 
 ## Quick Start
@@ -26,7 +28,6 @@ Open http://localhost:3000 in your browser.
 - GitHub Pages: `npm run build` then publish `/build`.
 
 ## Next improvements
-- Edit a task inline
-- Filter: All / Active / Completed
+- Clear completed
 - Drag to reorder
 - Tests with React Testing Library
