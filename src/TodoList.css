@@ -7,6 +7,25 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+.todo-app.theme-dark {
+  background: #111827;
+  color: #e5e7eb;
+  border-color: #374151;
+}
+.theme-dark .todo-input,
+.theme-dark .todo-filter,
+.theme-dark .todo-clear-btn,
+.theme-dark .todo-theme-btn {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+.theme-dark .todo-filter.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
 .todo-title {
   margin: 0 0 1rem;
   font-size: 1.5rem;
@@ -46,6 +65,9 @@
   gap: 8px;
   padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
+}
+.todo-item.dragging {
+  opacity: 0.6;
 }
 
 .todo-text {
@@ -114,4 +136,32 @@
 .todo-clear-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.todo-theme-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.todo-undo {
+  margin-top: 12px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.todo-undo-btn {
+  border: none;
+  background: #f59e0b;
+  color: #111827;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }

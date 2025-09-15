@@ -9,6 +9,9 @@ A simple, clean To-Do List built with React.
 - Edit task (double-click, Enter to save, Esc to cancel)
 - Filters: All / Active / Completed
 - Persists to localStorage
+- Undo delete (5s)
+- Drag to reorder (All filter)
+- Dark mode toggle (persists)
 
 ## Quick Start
 

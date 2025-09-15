@@ -8,6 +8,10 @@ function TodoList() {
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const idRef = useRef(0);
+  const undoTimerRef = useRef(null);
+  const [lastDeleted, setLastDeleted] = useState(null); // { task, index }
+  const [draggingId, setDraggingId] = useState(null);
+  const [theme, setTheme] = useState('light'); // light | dark
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -37,6 +41,12 @@ function TodoList() {
         setFilter(savedFilter);
       }
     } catch {}
+
+    // Load theme
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+    } catch {}
   }, []);
 
   // Save tasks to localStorage whenever they change
@@ -47,6 +57,10 @@ function TodoList() {
   useEffect(() => {
     localStorage.setItem('filter', filter);
   }, [filter]);
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleAddTask = () => {
     if (input.trim() === "") return;
@@ -64,7 +78,13 @@ function TodoList() {
   };
 
   const handleDeleteTask = (id) => {
+    const index = tasks.findIndex(t => t.id === id);
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
     setTasks(tasks.filter((t) => t.id !== id));
+    setLastDeleted({ task, index });
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoTimerRef.current = setTimeout(() => setLastDeleted(null), 5000);
     if (editingId === id) {
       setEditingId(null);
       setEditingText("");
@@ -100,8 +120,39 @@ function TodoList() {
     cancelEditing();
   };
 
+  // Undo delete
+  const undoDelete = () => {
+    if (!lastDeleted) return;
+    const { task, index } = lastDeleted;
+    const arr = [...tasks];
+    arr.splice(Math.min(index, arr.length), 0, task);
+    setTasks(arr);
+    setLastDeleted(null);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+  };
+
+  // Drag & drop reorder (only in 'all' filter)
+  const handleDragStart = (id) => {
+    setDraggingId(id);
+  };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+  const handleDrop = (targetId) => {
+    if (filter !== 'all') return; // only allow reorder in All
+    const srcIdx = tasks.findIndex(t => t.id === draggingId);
+    const dstIdx = tasks.findIndex(t => t.id === targetId);
+    if (srcIdx === -1 || dstIdx === -1 || srcIdx === dstIdx) return;
+    const arr = [...tasks];
+    const [moved] = arr.splice(srcIdx, 1);
+    arr.splice(dstIdx, 0, moved);
+    setTasks(arr);
+    setDraggingId(null);
+  };
+  const handleDragEnd = () => setDraggingId(null);
+
   return (
-    <div className="todo-app">
+    <div className={`todo-app ${theme === 'dark' ? 'theme-dark' : ''}`}>
       <h2 className="todo-title">To-Do List</h2>
       <div className="todo-input-row">
         <input
@@ -137,13 +188,26 @@ function TodoList() {
           onClick={() => setTasks(tasks.filter(t => !t.completed))}
           disabled={!hasCompleted}
         >Clear Completed</button>
+        <button
+          className="todo-theme-btn"
+          aria-pressed={theme === 'dark'}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</button>
       </div>
       <ul className="todo-list">
         {filteredTasks.length === 0 ? (
           <li className="todo-empty">No tasks yet.</li>
         ) : (
           filteredTasks.map((task) => (
-            <li key={task.id} className="todo-item">
+            <li
+              key={task.id}
+              className={`todo-item ${draggingId === task.id ? 'dragging' : ''}`}
+              draggable={filter === 'all'}
+              onDragStart={() => handleDragStart(task.id)}
+              onDragOver={handleDragOver}
+              onDrop={() => handleDrop(task.id)}
+              onDragEnd={handleDragEnd}
+            >
               <input
                 type="checkbox"
                 checked={task.completed}
@@ -178,6 +242,12 @@ function TodoList() {
           ))
         )}
       </ul>
+      {lastDeleted && (
+        <div className="todo-undo" role="alert" aria-live="assertive">
+          Task deleted.
+          <button className="todo-undo-btn" onClick={undoDelete}>Undo</button>
+        </div>
+      )}
     </div>
   );
 }
