@@ -59,6 +59,13 @@ Open http://localhost:3000 in your browser.
 		- `NETLIFY_SITE_ID`
 	- After first deploy, replace the badge URL `PLACEHOLDER-SITE-ID` and `PLACEHOLDER-NAME` with your actual site values.
 
+### Dual deployment note
+
+This repo deploys to both GitHub Pages and Netlify:
+- Pages build uses `npm run build:pages` (injects PUBLIC_URL for subpath).
+- Netlify uses plain `npm run build` so assets resolve at site root.
+If you see broken asset paths on Netlify, ensure the `homepage` field is NOT present in `package.json` (removed) and you used the standard build script.
+
 ## Tech & tests
 
 - React 19 (CRA)

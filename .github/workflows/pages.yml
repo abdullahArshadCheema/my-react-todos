@@ -34,10 +34,10 @@ jobs:
         run: |
           npm ci || npm install
 
-      - name: Build
+      - name: Build (with PUBLIC_URL for Pages)
         env:
           CI: true
-        run: npm run build
+        run: npm run build:pages
 
       - name: SPA fallback (copy index.html to 404.html)
         run: cp build/index.html build/404.html
