@@ -1,9 +1,14 @@
+/// <reference types="node" />
 import { test, expect } from '@playwright/test';
 
 // Basic e2e + visual regression for the Todo app
 
 test.describe('Todo App', () => {
   test('loads and matches layout screenshot', async ({ page }) => {
+    // Skip Intro for this test
+    await page.addInitScript(() => {
+      window.localStorage.setItem('seenIntro', 'true');
+    });
     await page.goto('/');
 
     // Wait for title and input
@@ -20,16 +25,22 @@ test.describe('Todo App', () => {
   });
 
   test('add + toggle + delete flow', async ({ page }) => {
+    // Skip Intro for this test
+    await page.addInitScript(() => {
+      window.localStorage.setItem('seenIntro', 'true');
+    });
     await page.goto('/');
     const input = page.getByPlaceholder('Add a new task...');
     await input.fill('Write Playwright test');
     await page.getByRole('button', { name: /add/i }).click();
 
-    await expect(page.getByText('Write Playwright test')).toBeVisible();
+  // Ensure we're asserting on the list item, not the toast
+  const listItem = page.getByRole('listitem').filter({ hasText: 'Write Playwright test' });
+  await expect(listItem).toBeVisible();
 
     // toggle complete
-    const item = page.getByRole('listitem').filter({ hasText: 'Write Playwright test' });
-    await item.getByRole('checkbox').check();
+  const item = listItem;
+  await item.getByRole('checkbox').check();
 
     // delete
     await item.getByRole('button', { name: /delete/i }).click();

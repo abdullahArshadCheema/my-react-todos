@@ -9,6 +9,13 @@ function App() {
     try {
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
+        // Reset intro immediately on initial load if requested
+        if (url.hash === '#reset-intro') {
+          try {
+            localStorage.removeItem('seenIntro');
+          } catch {}
+          return true;
+        }
         const forceIntro = url.hash === '#intro' || url.searchParams.get('intro') === '1';
         if (forceIntro) return true;
       }
