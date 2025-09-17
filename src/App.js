@@ -18,9 +18,11 @@ function App() {
         }
         const forceIntro = url.hash === '#intro' || url.searchParams.get('intro') === '1';
         if (forceIntro) return true;
+        const forceApp = url.hash === '#app' || url.searchParams.get('intro') === '0';
+        if (forceApp) return false;
       }
-      const seen = localStorage.getItem('seenIntro');
-      return seen !== 'true';
+      // Default to Intro when no explicit override is present
+      return true;
     } catch {
       return true;
     }
@@ -43,14 +45,20 @@ function App() {
         return;
       }
 
-      const force = url.hash === '#intro' || url.searchParams.get('intro') === '1';
-      if (force) {
+      const forceIntro = url.hash === '#intro' || url.searchParams.get('intro') === '1';
+      if (forceIntro) {
         setShowIntro(true);
         return;
       }
 
-      const seen = localStorage.getItem('seenIntro');
-      setShowIntro(seen !== 'true');
+      const forceApp = url.hash === '#app' || url.searchParams.get('intro') === '0';
+      if (forceApp) {
+        setShowIntro(false);
+        return;
+      }
+
+      // Default: show Intro
+      setShowIntro(true);
     } catch {
       setShowIntro(true);
     }
@@ -71,8 +79,8 @@ function App() {
       localStorage.setItem('seenIntro', 'true');
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
-        // Clean URL after onboarding
-        url.hash = '';
+        // Navigate to app explicitly and clean intro params
+        url.hash = '#app';
         url.searchParams.delete('intro');
         window.history.replaceState({}, '', url);
       }

@@ -5,11 +5,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Todo App', () => {
   test('loads and matches layout screenshot', async ({ page }) => {
-    // Skip Intro for this test
-    await page.addInitScript(() => {
-      window.localStorage.setItem('seenIntro', 'true');
-    });
-    await page.goto('/');
+    // Skip Intro via URL override
+    await page.goto('/#app');
 
     // Wait for title and input
     await expect(page.getByRole('heading', { level: 2, name: /to-do list/i })).toBeVisible();
@@ -25,11 +22,8 @@ test.describe('Todo App', () => {
   });
 
   test('add + toggle + delete flow', async ({ page }) => {
-    // Skip Intro for this test
-    await page.addInitScript(() => {
-      window.localStorage.setItem('seenIntro', 'true');
-    });
-    await page.goto('/');
+    // Skip Intro via URL override
+    await page.goto('/#app');
     const input = page.getByPlaceholder('Add a new task...');
     await input.fill('Write Playwright test');
     await page.getByRole('button', { name: /add/i }).click();

@@ -16,8 +16,8 @@ test.describe('Intro flow', () => {
     // Intro dismissed and todo app visible
     await expect(page.getByRole('heading', { name: /to-do list/i })).toBeVisible();
 
-    // URL cleaned (no #intro and no ?intro=1)
-    await expect(page).toHaveURL((url) => !url.hash && !url.searchParams.has('intro'));
+  // URL cleaned of intro params and routed to app (#app)
+  await expect(page).toHaveURL((url) => url.hash === '#app' && !url.searchParams.has('intro'));
   });
 
   test('reset via #reset-intro', async ({ page }) => {

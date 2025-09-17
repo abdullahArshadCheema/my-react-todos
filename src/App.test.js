@@ -18,9 +18,12 @@ test('shows Intro on first visit and proceeds on Get started', () => {
   expect(window.localStorage.getItem('seenIntro')).toBe('true');
 });
 
-test('skips Intro when seenIntro is true', () => {
-  window.localStorage.setItem('seenIntro', 'true');
+test('skips Intro when URL requests app (#app)', () => {
+  const { location } = window;
+  delete window.location;
+  window.location = new URL('http://localhost/#app');
   render(<App />);
   expect(screen.queryByText(/Focus on what matters/i)).not.toBeInTheDocument();
   expect(screen.getByText(/To-Do List/i)).toBeInTheDocument();
+  window.location = location;
 });
