@@ -1,12 +1,80 @@
 import './App.css';
+import React, { useCallback, useEffect, useState } from 'react';
 import TodoList from './TodoList';
+import Intro from './Intro';
 
 function App() {
+  // Decide initial intro visibility once (avoid flicker)
+  const initialShowIntro = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        const forceIntro = url.hash === '#intro' || url.searchParams.get('intro') === '1';
+        if (forceIntro) return true;
+      }
+      const seen = localStorage.getItem('seenIntro');
+      return seen !== 'true';
+    } catch {
+      return true;
+    }
+  };
+
+  const [showIntro, setShowIntro] = useState(initialShowIntro);
+
+  const computeShowIntro = useCallback(() => {
+    try {
+      if (typeof window === 'undefined') {
+        setShowIntro(true);
+        return;
+      }
+      const url = new URL(window.location.href);
+
+      // One-click reset via URL
+      if (url.hash === '#reset-intro') {
+        localStorage.removeItem('seenIntro');
+        setShowIntro(true);
+        return;
+      }
+
+      const force = url.hash === '#intro' || url.searchParams.get('intro') === '1';
+      if (force) {
+        setShowIntro(true);
+        return;
+      }
+
+      const seen = localStorage.getItem('seenIntro');
+      setShowIntro(seen !== 'true');
+    } catch {
+      setShowIntro(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('hashchange', computeShowIntro);
+    window.addEventListener('popstate', computeShowIntro);
+    return () => {
+      window.removeEventListener('hashchange', computeShowIntro);
+      window.removeEventListener('popstate', computeShowIntro);
+    };
+  }, [computeShowIntro]);
+
+  const handleStart = () => {
+    try {
+      localStorage.setItem('seenIntro', 'true');
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        // Clean URL after onboarding
+        url.hash = '';
+        url.searchParams.delete('intro');
+        window.history.replaceState({}, '', url);
+      }
+    } catch {}
+    setShowIntro(false);
+  };
   return (
     <div className="App">
-      <main className="App-main">
-        <TodoList />
-      </main>
+      <main className="App-main">{showIntro ? <Intro onStart={handleStart} /> : <TodoList />}</main>
       <footer
         style={{
           textAlign: 'center',
