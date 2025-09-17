@@ -45,6 +45,16 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
+## Intro screen controls
+
+This app shows a one-time Intro screen on first visit. You can control it via URL for demos or resets:
+
+- Force Intro: append `#intro` or `?intro=1` to the URL (e.g., `/#intro`).
+- Reset onboarding: append `#reset-intro` to clear the saved flag and show the Intro.
+- After clicking “Get started”, the app cleans the URL by removing `#intro` and `?intro`.
+
+Precedence: URL override > saved preference (localStorage `seenIntro`). If no override and no saved flag, Intro is shown.
+
 ### Code Splitting
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
